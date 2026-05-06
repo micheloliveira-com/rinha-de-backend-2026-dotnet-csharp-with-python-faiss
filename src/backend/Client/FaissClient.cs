@@ -11,9 +11,9 @@ public sealed class FaissClient
     public async Task<FaissResponse> QueryAsync(float[] vector)
     {
         var payload = new FaissRequest
-        {
-            Vector = vector
-        };
+        (
+            vector
+        );
 
         using var resp = await _http.PostAsJsonAsync(
             "/search",

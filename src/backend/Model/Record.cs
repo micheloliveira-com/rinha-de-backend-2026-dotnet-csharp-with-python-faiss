@@ -1,5 +1,4 @@
 
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json.Serialization;
 public record Transaction(
     double Amount,
@@ -50,50 +49,19 @@ public record NormalizationConfig(
     [property: JsonPropertyName("max_tx_count_24h")] double MaxTxCount24h,
     [property: JsonPropertyName("max_merchant_avg_amount")] double MaxMerchantAvgAmount);
 
-public class MccRiskConfig
-{
-    public Dictionary<string, double> Values { get; init; } = new();
-}
-public record FraudResult(bool approved, double fraud_score);
+public record MccRiskConfig(Dictionary<string, double> Values);
 
-public class FraudVector
-{
-    public ulong Id { get; set; }
-    public ReadOnlyMemory<float> Vector { get; set; }
+public record FaissRequest(float[] Vector);
+public record FaissResponse(int FraudCount);
 
-    public bool IsFraud { get; set; }
-}
-
-public sealed class FaissRequest
-{
-    public float[] Vector { get; set; } = default!;
-    }
-
-public sealed class FaissResponse 
-{
-
-    public int FraudCount {get;set;}= default!;
-}
-
-[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower)]
 [JsonSerializable(typeof(FraudRequest))]
-[JsonSerializable(typeof(FraudVector))]
 [JsonSerializable(typeof(FraudResponse))]
-[JsonSerializable(typeof(FraudResult))]
 [JsonSerializable(typeof(FaissRequest))]
 [JsonSerializable(typeof(FaissResponse))]
-
 [JsonSerializable(typeof(NormalizationConfig))]
 [JsonSerializable(typeof(MccRiskConfig))]
-[JsonSerializable(typeof(Reference))]
 [JsonSerializable(typeof(Dictionary<string, double>))]
-
-// 👇 THESE ARE ALMOST ALWAYS THE MISSING ONES
-[JsonSerializable(typeof(Transaction))]
-[JsonSerializable(typeof(Customer))]
-[JsonSerializable(typeof(Merchant))]
-[JsonSerializable(typeof(Terminal))]
-[JsonSerializable(typeof(LastTransaction))]
 [JsonSerializable(typeof(string))]
 internal partial class JsonContext : JsonSerializerContext
 {

@@ -143,7 +143,7 @@ async def search_endpoint(request):
     fraud_count = search(vec)
 
     return web.json_response({
-        "fraudCount": fraud_count
+        "fraud_count": fraud_count
     })
 
 

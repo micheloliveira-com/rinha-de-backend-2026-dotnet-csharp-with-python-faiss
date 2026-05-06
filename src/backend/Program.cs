@@ -13,7 +13,7 @@ var faissUrl = builder.Configuration.GetConnectionString(Constant.FAISS_URL_CONN
 builder.Services.ConfigureHttpJsonOptions(options =>
 {
     options.SerializerOptions.TypeInfoResolverChain.Insert(0, JsonContext.Default);
-    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    options.SerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower;
 });
 
 builder.UseUnixSocketFromEnv(socketPath);
@@ -22,10 +22,10 @@ var normalization = JsonSerializer.Deserialize(
     File.ReadAllText(Constant.NORMALIZATION_JSON_FILE_PATH), JsonContext.Default.NormalizationConfig)!;
 
 var mccRiskConfig = new MccRiskConfig
-{
-    Values = JsonSerializer.Deserialize(
+(
+    JsonSerializer.Deserialize(
         File.ReadAllText(Constant.RISK_JSON_FILE_PATH), JsonContext.Default.DictionaryStringDouble)!
-};
+);
 
 builder.Services.AddHttpClient<FaissClient>(client =>
 {
