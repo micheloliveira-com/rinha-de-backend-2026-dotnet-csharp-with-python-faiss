@@ -1,8 +1,0 @@
-faiss-cpu
-numpy
-fastapi
-uvicorn[standard]
-ijson
-pydantic
-aiohttp
-gunicorn
