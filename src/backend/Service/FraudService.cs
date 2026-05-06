@@ -12,7 +12,7 @@ public class FraudService(
         var score = result.FraudCount / 5.0f;
 
         return new FraudResponse(
-            Approved: score < 0.6,
+            Approved: score < 0.6f,
             FraudScore: score
         );
     }
