@@ -1,57 +1,86 @@
+using System.Numerics;
+
 public class VectorService(
     NormalizationConfig normalizationConfig,
     MccRiskConfig mccRiskConfig
 )
 {
-    public double[] BuildVector(FraudRequest req)
+    public float[] BuildVector(FraudRequest req)
     {
-        static double Clamp(double v)
-            => Math.Max(0.0, Math.Min(1.0, v));
-
+        static float Clamp(float v)
+            => Math.Max(0.0f, Math.Min(1.0f, v));
+            
         var tx = req.Transaction;
         var customer = req.Customer;
         var merchant = req.Merchant;
         var terminal = req.Terminal;
         var last = req.LastTransaction;
 
-        var v = new double[14];
+        var v = new float[14];
 
-        v[0] = Clamp(tx.Amount / normalizationConfig.MaxAmount);
-        v[1] = Clamp(tx.Installments / normalizationConfig.MaxInstallments);
+        v[VectorIndex.AmountNormalized] = Clamp(tx.Amount / normalizationConfig.MaxAmount);
+        v[VectorIndex.InstallmentsNormalized] = Clamp(tx.Installments / normalizationConfig.MaxInstallments);
 
         var ratio = customer.AvgAmount == 0 ? 0 : tx.Amount / customer.AvgAmount;
-        v[2] = Clamp(ratio / normalizationConfig.AmountVsAvgRatio);
+        v[VectorIndex.AmountVsAvgRatio] = Clamp(ratio / normalizationConfig.AmountVsAvgRatio);
 
         var dt = ParseIsoUtc(tx.RequestedAt);
-        v[3] = dt.Hour / 23.0;
+        v[VectorIndex.HourOfDay] = dt.Hour / 23.0f;
 
         int dow = ((int)dt.DayOfWeek + 6) % 7;
-        v[4] = dow / 6.0;
+        v[VectorIndex.DayOfWeek] = dow / 6.0f;
 
         if (last == null)
-            v[5] = -1;
+            v[VectorIndex.MinutesSinceLastTx] = -1;
         else
         {
             var lastTime = ParseIsoUtc(last.Timestamp);
-            v[5] = Clamp((dt - lastTime).TotalMinutes / normalizationConfig.MaxMinutes);
+            v[VectorIndex.MinutesSinceLastTx] =
+                Clamp((float)(dt - lastTime).TotalMinutes / normalizationConfig.MaxMinutes);
         }
 
-        v[6] = last == null ? -1 : Clamp(last.KmFromCurrent / normalizationConfig.MaxKm);
-        v[7] = Clamp(terminal.KmFromHome / normalizationConfig.MaxKm);
-        v[8] = Clamp(customer.TxCount24h / normalizationConfig.MaxTxCount24h);
+        v[VectorIndex.LastDistanceKm] =
+            last == null ? -1 : Clamp(last.KmFromCurrent / normalizationConfig.MaxKm);
 
-        v[9] = terminal.IsOnline ? 1 : 0;
-        v[10] = terminal.CardPresent ? 1 : 0;
+        v[VectorIndex.TerminalDistanceKm] =
+            Clamp(terminal.KmFromHome / normalizationConfig.MaxKm);
 
-        v[11] = customer.KnownMerchants.Contains(merchant.Id) ? 0 : 1;
+        v[VectorIndex.TxCount24h] =
+            Clamp(customer.TxCount24h / normalizationConfig.MaxTxCount24h);
 
-        v[12] = mccRiskConfig.Values.TryGetValue(merchant.Mcc, out var risk)
-            ? risk
-            : 0.5;
+        v[VectorIndex.TerminalIsOnline] = terminal.IsOnline ? 1 : 0;
+        v[VectorIndex.CardPresent] = terminal.CardPresent ? 1 : 0;
 
-        v[13] = Clamp(merchant.AvgAmount / normalizationConfig.MaxMerchantAvgAmount);
+        v[VectorIndex.UnknownMerchant] =
+            customer.KnownMerchants.Contains(merchant.Id) ? 0 : 1;
+
+        v[VectorIndex.MerchantMccRisk] =
+            mccRiskConfig.Values.TryGetValue(merchant.Mcc, out var risk)
+                ? risk
+                : 0.5f;
+
+        v[VectorIndex.MerchantAvgAmount] =
+            Clamp(merchant.AvgAmount / normalizationConfig.MaxMerchantAvgAmount);
 
         return v;
+    }
+
+    private readonly struct VectorIndex
+    {
+        public const int AmountNormalized = 0;
+        public const int InstallmentsNormalized = 1;
+        public const int AmountVsAvgRatio = 2;
+        public const int HourOfDay = 3;
+        public const int DayOfWeek = 4;
+        public const int MinutesSinceLastTx = 5;
+        public const int LastDistanceKm = 6;
+        public const int TerminalDistanceKm = 7;
+        public const int TxCount24h = 8;
+        public const int TerminalIsOnline = 9;
+        public const int CardPresent = 10;
+        public const int UnknownMerchant = 11;
+        public const int MerchantMccRisk = 12;
+        public const int MerchantAvgAmount = 13;
     }
 
     private DateTime ParseIsoUtc(string s)

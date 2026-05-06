@@ -24,7 +24,7 @@ var normalization = JsonSerializer.Deserialize(
 var mccRiskConfig = new MccRiskConfig
 (
     JsonSerializer.Deserialize(
-        File.ReadAllText(Constant.RISK_JSON_FILE_PATH), JsonContext.Default.DictionaryStringDouble)!
+        File.ReadAllText(Constant.RISK_JSON_FILE_PATH), JsonContext.Default.DictionaryStringSingle)!
 );
 
 builder.Services.AddHttpClient<FaissClient>(client =>

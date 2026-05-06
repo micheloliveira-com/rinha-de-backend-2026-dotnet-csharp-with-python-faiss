@@ -5,13 +5,11 @@ public class FraudService(
 {
     public async Task<FraudResponse> ProcessAsync(FraudRequest fraudRequest)
     {
-        var vector = vectorService.BuildVector(fraudRequest)
-            .Select(x => (float)x)
-            .ToArray();
+        var vector = vectorService.BuildVector(fraudRequest);
 
         var result = await faissClient.QueryAsync(vector);
 
-        double score = result.FraudCount / 5.0;
+        var score = result.FraudCount / 5.0f;
 
         return new FraudResponse(
             Approved: score < 0.6,
