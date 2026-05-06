@@ -7,8 +7,8 @@ public class VectorService(
 {
     public float[] BuildVector(FraudRequest req)
     {
-        static float Clamp(float v)
-            => Math.Max(0.0f, Math.Min(1.0f, v));
+        static float Clamp(double v)
+            => Math.Max(0.0f, Math.Min(1.0f, (float)v));
             
         var tx = req.Transaction;
         var customer = req.Customer;
@@ -16,7 +16,7 @@ public class VectorService(
         var terminal = req.Terminal;
         var last = req.LastTransaction;
 
-        var v = new float[14];
+        var v = new float[Constant.VECTOR_SIZE];
 
         v[VectorIndex.AmountNormalized] = Clamp(tx.Amount / normalizationConfig.MaxAmount);
         v[VectorIndex.InstallmentsNormalized] = Clamp(tx.Installments / normalizationConfig.MaxInstallments);
@@ -36,7 +36,7 @@ public class VectorService(
         {
             var lastTime = ParseIsoUtc(last.Timestamp);
             v[VectorIndex.MinutesSinceLastTx] =
-                Clamp((float)(dt - lastTime).TotalMinutes / normalizationConfig.MaxMinutes);
+                Clamp((dt - lastTime).TotalMinutes / normalizationConfig.MaxMinutes);
         }
 
         v[VectorIndex.LastDistanceKm] =

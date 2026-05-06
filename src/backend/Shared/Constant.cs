@@ -1,5 +1,6 @@
 public static class Constant
 {
+    public const int VECTOR_SIZE = 14;
 
     public const string FAISS_URL_CONN_STRING_NAME = "faiss";
     public const string LISTEN_SOCK_ENV_VAR_NAME = "LISTEN_SOCK";

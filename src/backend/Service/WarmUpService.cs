@@ -5,7 +5,7 @@ public class WarmupService(FaissClient faissClient)
         Console.WriteLine("[FAISS] Starting warmup batch...");
 
         var rand = new Random();
-        var vector = new float[14]; // reused buffer
+        var vector = new float[Constant.VECTOR_SIZE]; // reused buffer
 
         for (int i = 0; i < 100; i++)
         {
