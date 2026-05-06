@@ -26,10 +26,10 @@ WORKDIR /app
 # -----------------------------
 # Install Python deps
 # -----------------------------
-COPY requirements.txt .
+COPY requirements.freeze.txt .
 
 RUN pip install --no-cache-dir -U pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements.freeze.txt
 
 # -----------------------------
 # Copy app
