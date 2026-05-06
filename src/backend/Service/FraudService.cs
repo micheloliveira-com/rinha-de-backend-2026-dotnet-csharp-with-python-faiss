@@ -3,9 +3,8 @@ public class FraudService(
     VectorService vectorService
 )
 {
-    public async Task<FraudResponse> Process(FraudRequest fraudRequest)
+    public async Task<FraudResponse> ProcessAsync(FraudRequest fraudRequest)
     {
-        
         var vector = vectorService.BuildVector(fraudRequest)
             .Select(x => (float)x)
             .ToArray();

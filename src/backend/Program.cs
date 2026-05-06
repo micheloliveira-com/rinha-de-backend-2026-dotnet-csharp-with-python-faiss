@@ -58,6 +58,6 @@ app.MapGet("/ready", () => Results.Ok());
 app.MapPost("/fraud-score", async (
     FraudRequest fraudRequest,
     FraudService fraudService
-) => fraudService.Process(fraudRequest));
+) => await fraudService.ProcessAsync(fraudRequest));
 
 app.Run();
