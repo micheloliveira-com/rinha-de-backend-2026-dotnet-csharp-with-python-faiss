@@ -16,9 +16,9 @@ TOP_K = 5
 NLIST = 4096
 NPROBE = 16
 
-DATA_FILE = "references.json.gz"
-INDEX_FILE = "references.faiss"
-LABELS_FILE = "labels.npy"
+DATA_FILE = "resources/references.json.gz"
+INDEX_FILE = "resources/train/references.faiss"
+LABELS_FILE = "resources/train/labels.npy"
 
 ONLY_REBUILD = os.getenv("ONLY_REBUILD", "0") == "1"
 
