@@ -49,7 +49,7 @@ services:
           cpus: "0.6"
           memory: "220MB"
   load-balancer:
-    image: haproxy:3.2.4-alpine
+    image: haproxy:3.3.8-alpine
     volumes:
       - sock:/run/sock
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
