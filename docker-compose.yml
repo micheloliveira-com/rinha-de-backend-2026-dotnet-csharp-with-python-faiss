@@ -8,12 +8,6 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - LISTEN_SOCK=/run/sock/api-1.sock
       - ConnectionStrings__faiss=http://faiss-backend:5000
-    healthcheck:
-      test: >
-      interval: 1h
-      timeout: 70s
-      retries: 0
-      start_period: 1s
     deploy:
       resources:
         limits:
@@ -28,12 +22,6 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - LISTEN_SOCK=/run/sock/api-2.sock
       - ConnectionStrings__faiss=http://faiss-backend:5000
-    healthcheck:
-      test: >
-      interval: 1h
-      timeout: 70s
-      retries: 0
-      start_period: 1s
     deploy:
       resources:
         limits:
@@ -54,10 +42,9 @@ services:
       - sock:/run/sock
       - ./haproxy.cfg:/usr/local/etc/haproxy/haproxy.cfg:ro
     depends_on:
-      backend-1:
-        condition: service_healthy
-      backend-2:
-        condition: service_healthy
+      - backend-1
+      - backend-2
+      - faiss-backend
     ports:
       - "9999:9999"
     deploy:
