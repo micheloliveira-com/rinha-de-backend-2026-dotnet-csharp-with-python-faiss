@@ -55,7 +55,7 @@ flowchart LR
 
 ### Serviço de Similaridade (FAISS - Python)
 
--   Motor de busca vetorial com FAISS
+-   Motor de busca vetorial com FAISS (IVF FP16)
 -   Indexação de embeddings em memória
 -   Serviço independente das APIs
 
