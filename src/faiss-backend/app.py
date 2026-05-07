@@ -20,6 +20,8 @@ DATA_FILE = "resources/references.json.gz"
 INDEX_FILE = "resources/train/references.faiss"
 LABELS_FILE = "resources/train/labels.npy"
 
+os.makedirs(os.path.dirname(INDEX_FILE), exist_ok=True)
+
 ONLY_REBUILD = os.getenv("ONLY_REBUILD", "0") == "1"
 
 index = None
