@@ -9,7 +9,7 @@ similaridade vetorial.
 Objetivo: alta performance, baixa latência e isolamento do componente de
 busca.
 
-## Post oficial dessa versão no blog
+## Post oficial detalhado
 
 https://micheloliveira.com/blog/desafio-performance-rinha-backend-2026-insights-csharp-faiss/
 
