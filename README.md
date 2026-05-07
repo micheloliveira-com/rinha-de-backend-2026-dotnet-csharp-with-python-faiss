@@ -92,6 +92,20 @@ src/rinha-de-backend-2026-dotnet-csharp.code-workspace
 src/rinha-de-backend-2026-dotnet-csharp.sln
 ```
 
+### Resources oficiais base da execução
+
+``` bash
+src/faiss-backend/references.json.gz
+src/backend/Resources/mcc_risk.json
+src/backend/Resources/normalization.json
+```
+
+### Resources gerados com a base oficial references.json.gz
+
+``` bash
+src/faiss-backend/train/references.faiss
+src/faiss-backend/train/labels.npy
+```
 ------------------------------------------------------------------------
 
 ### HAProxy
