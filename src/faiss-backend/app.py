@@ -127,8 +127,7 @@ def bootstrap():
 # -----------------------------
 def search(vec):
     _, I = index.search(vec, TOP_K)
-    return int(labels[I[0]].sum())
-
+    return int(labels.take(I[0]).sum())
 
 # -----------------------------
 # API
