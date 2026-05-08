@@ -14,9 +14,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-              - name: Download Environment
+      - name: Download Environment
         run: |
-          echo "Downloading PREVIEW rinha.js from remote repository"
+          echo "Downloading test.js from remote repository"
 
           # Initialize a temporary git repository
           git init temp-rinha
