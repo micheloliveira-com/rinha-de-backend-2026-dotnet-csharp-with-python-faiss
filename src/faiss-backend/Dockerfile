@@ -28,10 +28,6 @@ ENV OMP_NUM_THREADS=1 \
 # Prebuild step
 RUN ONLY_REBUILD=1 python app.py
 
-# Compileall Step
-RUN python -m compileall /app \
- && python -m compileall /usr/local/lib/python3.11/site-packages
-
 # -----------------------------
 # Final image: runtime only
 # -----------------------------
@@ -40,7 +36,7 @@ FROM python:3.11.15-slim-trixie
 WORKDIR /app
 
 # Copy only runtime dependencies from builder
-COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local /usr/local
 COPY --from=builder /app /app
 
 # Environment variables
