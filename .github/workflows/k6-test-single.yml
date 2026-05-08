@@ -14,29 +14,33 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Download Environment
+      - name: Download test folder from remote repository
         run: |
-          echo "Downloading test.js from remote repository"
+          echo "Downloading test folder from remote repository"
 
-          # Initialize a temporary git repository
-          git init temp-rinha
-          cd temp-rinha
+          # Remove temp if it exists
+          rm -rf temp
 
-          # Add remote and enable sparse checkout
+          # Create temp folder
+          mkdir -p temp
+          cd temp
+
+          # Initialize git repository
+          git init
+
+          # Add remote
           git remote add origin https://github.com/zanfranceschi/rinha-de-backend-2026.git
+
+          # Enable sparse checkout
           git config core.sparseCheckout true
 
-          # Define folder to checkout
+          # Specify folder to checkout
           echo "test/" >> .git/info/sparse-checkout
 
-          # Pull only the specified folder
+          # Pull only the test folder from main branch
           git pull origin main
 
-          # Move the test folder to workspace root while preserving structure
-          mv test ../temp/test
           cd ..
-          rm -rf temp-rinha
-
           # Set environment variables
           echo "K6_TEST_FILE=temp/test/test.js" >> $GITHUB_ENV
           echo "RESULTS_FILE=temp/test/results.json" >> $GITHUB_ENV
