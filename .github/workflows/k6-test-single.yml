@@ -42,7 +42,7 @@ jobs:
 
           cd ..
           # Set environment variables
-          echo "K6_TEST_FILE=temp/test/test.js" >> $GITHUB_ENV
+          echo "K6_TEST_FILE=test/test.js" >> $GITHUB_ENV
           echo "RESULTS_FILE=temp/test/results.json" >> $GITHUB_ENV
           echo "PROJECT_FOLDER=src" >> $GITHUB_ENV
 
@@ -79,7 +79,7 @@ jobs:
       - uses: grafana/setup-k6-action@v1
 
       - name: Run k6 test
-        run: k6 run ${K6_TEST_FILE}
+        run: cd temp && k6 run ${K6_TEST_FILE}
 
       - name: Upload JSON Results
         uses: actions/upload-artifact@v4
