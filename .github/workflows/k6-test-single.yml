@@ -32,14 +32,14 @@ jobs:
           # Pull only the specified folder
           git pull origin main
 
-          # Move the test folder to workspace root
-          mv test ../temp
+          # Move the test folder to workspace root while preserving structure
+          mv test ../temp/test
           cd ..
           rm -rf temp-rinha
 
-          # Set environment variables to point to temp folder
-          echo "K6_TEST_FILE=temp/test.js" >> $GITHUB_ENV
-          echo "RESULTS_FILE=temp/results.json" >> $GITHUB_ENV
+          # Set environment variables
+          echo "K6_TEST_FILE=temp/test/test.js" >> $GITHUB_ENV
+          echo "RESULTS_FILE=temp/test/results.json" >> $GITHUB_ENV
           echo "PROJECT_FOLDER=src" >> $GITHUB_ENV
 
       - name: Build and start services
