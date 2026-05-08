@@ -64,3 +64,5 @@ jobs:
             docker push $REPO/$IMAGE:latest
             docker push $REPO/$IMAGE:$TIMESTAMP
           done
+
+          echo "TIMESTAMP TAG=$TIMESTAMP"
