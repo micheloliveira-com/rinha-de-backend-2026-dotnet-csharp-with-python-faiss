@@ -5,8 +5,6 @@ import gzip
 import ijson
 import faiss
 
-faiss.omp_set_num_threads(2)
-
 VECTOR_DIM = 14
 TOP_K = 5
 NLIST = 4096
