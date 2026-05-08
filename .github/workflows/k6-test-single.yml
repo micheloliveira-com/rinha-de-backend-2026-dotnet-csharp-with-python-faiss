@@ -1,4 +1,4 @@
-name: k6 Test - Preview or Final
+name: k6 Test
 
 on:
   workflow_dispatch:
@@ -52,7 +52,7 @@ jobs:
 
           while [ $ATTEMPTS -lt 60 ]; do
             ATTEMPTS=$((ATTEMPTS+1))
-            STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9999/payments-summary || true)
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9999/ready || true)
 
             if [ "$STATUS" -eq 200 ]; then
               SUCCESS_COUNT=$((SUCCESS_COUNT+1))
