@@ -119,8 +119,3 @@ jobs:
             name: comment-md-${{ matrix.run_id }}
             path: comment.md
             retention-days: 1
-
-  run-checks:
-    if: ${{ github.event.inputs.mode != '' }}
-    needs: k6-test
-    uses: ./.github/workflows/k6-test-checks.yml
