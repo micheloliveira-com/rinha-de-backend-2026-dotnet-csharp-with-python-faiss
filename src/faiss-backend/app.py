@@ -8,7 +8,7 @@ import faiss
 VECTOR_DIM = 14
 TOP_K = 5
 NLIST = 4096
-NPROBE = 8
+NPROBE = 16
 
 DATA_FILE = "resources/references.json.gz"
 INDEX_FILE = "resources/train/references.faiss"
