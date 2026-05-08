@@ -8,10 +8,11 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - LISTEN_SOCK=/run/sock/api-1.sock
       - ConnectionStrings__faiss=http://faiss-backend:5000
+    cpuset: "2,3"
     deploy:
       resources:
         limits:
-          cpus: "0.2"
+          cpus: "0.15"
           memory: "50MB"
   backend-2:
     image: ghcr.io/micheloliveira-com/rinha-de-backend-2026-dotnet-csharp-with-faiss:20260508165822
@@ -22,19 +23,21 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - LISTEN_SOCK=/run/sock/api-2.sock
       - ConnectionStrings__faiss=http://faiss-backend:5000
+    cpuset: "2,3"
     deploy:
       resources:
         limits:
-          cpus: "0.2"
+          cpus: "0.15"
           memory: "50MB"
   faiss-backend:
     image: ghcr.io/micheloliveira-com/rinha-de-backend-2026-dotnet-csharp-with-python-faiss:20260508165822
     ports:
-      - "5000" 
+      - "5000"
+    cpuset: "0,1"
     deploy:
       resources:
         limits:
-          cpus: "0.5"
+          cpus: "0.6"
           memory: "220MB"
   load-balancer:
     image: haproxy:3.3.8-alpine
@@ -47,6 +50,7 @@ services:
       - faiss-backend
     ports:
       - "9999:9999"
+    cpuset: "2,3"
     deploy:
       resources:
         limits:
