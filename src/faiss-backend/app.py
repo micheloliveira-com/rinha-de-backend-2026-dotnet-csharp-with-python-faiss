@@ -3,13 +3,7 @@ import numpy as np
 from aiohttp import web
 import gzip
 import ijson
-
-try:
-    from faiss import swigfaiss_avx2 as faiss
-    print("[FAISS] AVX2 enabled")
-except ImportError:
-    import faiss
-    print("[FAISS] AVX2 not available, using default build")
+import faiss
 
 VECTOR_DIM = 14
 TOP_K = 5
