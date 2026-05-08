@@ -45,7 +45,7 @@ def load_data(path):
             else:
                 label_list.append(1 if int(lbl) == 1 else 0)
 
-    X = np.asarray(vectors, dtype=np.float32)
+    X = np.ascontiguousarray(np.asarray(vectors, dtype=np.float32))
     y = np.asarray(label_list, dtype=np.int8)
 
     return X, y
