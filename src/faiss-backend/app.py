@@ -61,7 +61,7 @@ def train_and_save():
         quantizer,
         VECTOR_DIM,
         NLIST,
-        faiss.ScalarQuantizer.QT_8bit,
+        faiss.ScalarQuantizer.QT_fp16,
         faiss.METRIC_L2
     )
 
