@@ -1,4 +1,4 @@
-name: k6 Test - Preview or Final
+name: k6 Test
 
 on:
   workflow_dispatch:
@@ -8,38 +8,42 @@ jobs:
 
     strategy:
       matrix:
-        run_id: [1]
+        run_id: [1, 2, 3]
       fail-fast: false
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Download Environment
+      - name: Download test folder from remote repository
         run: |
-          echo "Downloading test.js from remote repository"
+          echo "Downloading test folder from remote repository"
 
-          # Initialize a temporary git repository
-          git init temp-rinha
-          cd temp-rinha
+          # Remove temp if it exists
+          rm -rf temp
 
-          # Add remote and enable sparse checkout
+          # Create temp folder
+          mkdir -p temp
+          cd temp
+
+          # Initialize git repository
+          git init
+
+          # Add remote
           git remote add origin https://github.com/zanfranceschi/rinha-de-backend-2026.git
+
+          # Enable sparse checkout
           git config core.sparseCheckout true
 
-          # Define folder to checkout
+          # Specify folder to checkout
           echo "test/" >> .git/info/sparse-checkout
 
-          # Pull only the specified folder
+          # Pull only the test folder from main branch
           git pull origin main
 
-          # Move the test folder to workspace root
-          mv test ../temp
           cd ..
-          rm -rf temp-rinha
-
-          # Set environment variables to point to temp folder
-          echo "K6_TEST_FILE=temp/test.js" >> $GITHUB_ENV
-          echo "RESULTS_FILE=temp/results.json" >> $GITHUB_ENV
+          # Set environment variables
+          echo "K6_TEST_FILE=test/test.js" >> $GITHUB_ENV
+          echo "RESULTS_FILE=temp/test/results.json" >> $GITHUB_ENV
           echo "PROJECT_FOLDER=src" >> $GITHUB_ENV
 
       - name: Build and start services
@@ -52,7 +56,7 @@ jobs:
 
           while [ $ATTEMPTS -lt 60 ]; do
             ATTEMPTS=$((ATTEMPTS+1))
-            STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9999/payments-summary || true)
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:9999/ready || true)
 
             if [ "$STATUS" -eq 200 ]; then
               SUCCESS_COUNT=$((SUCCESS_COUNT+1))
@@ -75,7 +79,7 @@ jobs:
       - uses: grafana/setup-k6-action@v1
 
       - name: Run k6 test
-        run: k6 run ${K6_TEST_FILE}
+        run: cd temp && k6 run ${K6_TEST_FILE}
 
       - name: Upload JSON Results
         uses: actions/upload-artifact@v4

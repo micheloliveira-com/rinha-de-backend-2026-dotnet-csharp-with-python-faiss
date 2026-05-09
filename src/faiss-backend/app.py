@@ -3,18 +3,12 @@ import numpy as np
 from aiohttp import web
 import gzip
 import ijson
-
-try:
-    from faiss import swigfaiss_avx2 as faiss
-    print("[FAISS] AVX2 enabled")
-except ImportError:
-    import faiss
-    print("[FAISS] AVX2 not available, using default build")
+import faiss
 
 VECTOR_DIM = 14
 TOP_K = 5
 NLIST = 4096
-NPROBE = 16
+NPROBE = 8
 
 DATA_FILE = "resources/references.json.gz"
 INDEX_FILE = "resources/train/references.faiss"
@@ -45,7 +39,7 @@ def load_data(path):
             else:
                 label_list.append(1 if int(lbl) == 1 else 0)
 
-    X = np.asarray(vectors, dtype=np.float32)
+    X = np.ascontiguousarray(vectors, dtype=np.float32)
     y = np.asarray(label_list, dtype=np.int8)
 
     return X, y
@@ -104,7 +98,7 @@ def load_saved():
     index.nprobe = NPROBE
 
     print("[FAISS] loading labels...")
-    labels = np.load(LABELS_FILE, mmap_mode="r")
+    labels = np.load(LABELS_FILE)
 
     print("[FAISS] ready:", index.ntotal)
 
@@ -131,8 +125,7 @@ def bootstrap():
 # -----------------------------
 def search(vec):
     _, I = index.search(vec, TOP_K)
-    return int(labels[I[0]].sum())
-
+    return int(labels.take(I[0]).sum())
 
 # -----------------------------
 # API
@@ -140,7 +133,7 @@ def search(vec):
 async def search_endpoint(request):
     msg = await request.json()
 
-    vec = np.asarray(msg["vector"], dtype=np.float32).reshape(1, -1)
+    vec = np.ascontiguousarray(msg["vector"], dtype=np.float32)[None, :]
 
     fraud_count = search(vec)
 
