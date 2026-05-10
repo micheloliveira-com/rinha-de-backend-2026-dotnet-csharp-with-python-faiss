@@ -5,16 +5,24 @@ import gzip
 import ijson
 import faiss
 
+faiss.omp_set_num_threads(2)
+
 VECTOR_DIM = 14
 TOP_K = 5
 NLIST = 4096
 NPROBE = 8
+NUM_SHARDS = 2
 
 DATA_FILE = "resources/references.json.gz"
-INDEX_FILE = "resources/train/references.faiss"
-LABELS_FILE = "resources/train/labels.npy"
+INDEX_DIR = "resources/train"
+LABELS_FILE = os.path.join(INDEX_DIR, "labels.npy")
 
-os.makedirs(os.path.dirname(INDEX_FILE), exist_ok=True)
+SHARD_FILES = [
+    os.path.join(INDEX_DIR, f"references_shard_{i}.faiss")
+    for i in range(NUM_SHARDS)
+]
+
+os.makedirs(INDEX_DIR, exist_ok=True)
 
 ONLY_REBUILD = os.getenv("ONLY_REBUILD", "0") == "1"
 
@@ -46,15 +54,9 @@ def load_data(path):
 
 
 # -----------------------------
-# BUILD + SAVE
+# BUILD SINGLE SHARD
 # -----------------------------
-def train_and_save():
-    global index, labels
-
-    print("[FAISS] loading raw data...")
-    X, y = load_data(DATA_FILE)
-
-    print("[FAISS] creating index...")
+def build_shard(X):
     quantizer = faiss.IndexFlatL2(VECTOR_DIM)
 
     idx = faiss.IndexIVFScalarQuantizer(
@@ -65,26 +67,52 @@ def train_and_save():
         faiss.METRIC_L2
     )
 
+    idx.train(X)
+    idx.add(X)
     idx.nprobe = NPROBE
 
-    print("[FAISS] training...")
-    idx.train(X)
+    return idx
 
-    print("[FAISS] adding...")
-    idx.add(X)
 
-    print("[FAISS] saving index...")
-    faiss.write_index(idx, INDEX_FILE)
+# -----------------------------
+# BUILD + SAVE
+# -----------------------------
+def train_and_save():
+    global index, labels
+
+    print("[FAISS] loading raw data...")
+    X, y = load_data(DATA_FILE)
+
+    print(f"[FAISS] building {NUM_SHARDS} shards...")
+
+    parts_X = np.array_split(X, NUM_SHARDS)
+    shard_indexes = []
+
+    for i in range(NUM_SHARDS):
+        print(f"[FAISS] training shard {i}...")
+        shard_idx = build_shard(parts_X[i])
+
+        print(f"[FAISS] saving shard {i}...")
+        faiss.write_index(shard_idx, SHARD_FILES[i])
+
+        shard_indexes.append(shard_idx)
 
     print("[FAISS] saving labels...")
     np.save(LABELS_FILE, y)
 
-    index = idx
+    # compose search index with global successive ids
+    merged = faiss.IndexShards(VECTOR_DIM, False, True)
+
+    for shard_idx in shard_indexes:
+        shard_idx.nprobe = NPROBE
+        merged.add_shard(shard_idx)
+
+    index = merged
     labels = y
 
     del X
 
-    print("[FAISS] ready:", index.ntotal)
+    print("[FAISS] ready:", labels.shape[0])
 
 
 # -----------------------------
@@ -93,14 +121,21 @@ def train_and_save():
 def load_saved():
     global index, labels
 
-    print("[FAISS] loading saved index...")
-    index = faiss.read_index(INDEX_FILE)
-    index.nprobe = NPROBE
+    print("[FAISS] loading saved shards...")
+
+    merged = faiss.IndexShards(VECTOR_DIM, False, True)
+
+    for i in range(NUM_SHARDS):
+        shard_idx = faiss.read_index(SHARD_FILES[i])
+        shard_idx.nprobe = NPROBE
+        merged.add_shard(shard_idx)
+
+    index = merged
 
     print("[FAISS] loading labels...")
     labels = np.load(LABELS_FILE)
 
-    print("[FAISS] ready:", index.ntotal)
+    print("[FAISS] ready:", labels.shape[0])
 
 
 # -----------------------------
@@ -112,7 +147,7 @@ def bootstrap():
         train_and_save()
         return False
 
-    if os.path.exists(INDEX_FILE) and os.path.exists(LABELS_FILE):
+    if all(os.path.exists(f) for f in SHARD_FILES) and os.path.exists(LABELS_FILE):
         load_saved()
     else:
         train_and_save()
@@ -126,6 +161,7 @@ def bootstrap():
 def search(vec):
     _, I = index.search(vec, TOP_K)
     return int(labels.take(I[0]).sum())
+
 
 # -----------------------------
 # API
