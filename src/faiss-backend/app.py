@@ -8,8 +8,8 @@ import faiss
 VECTOR_DIM = 14
 TOP_K = 5
 NLIST = 2048
-NPROBE = 8
-NUM_SHARDS = 3
+NPROBE = 4
+NUM_SHARDS = 2
 
 DATA_FILE = "resources/references.json.gz"
 INDEX_DIR = "resources/train"
