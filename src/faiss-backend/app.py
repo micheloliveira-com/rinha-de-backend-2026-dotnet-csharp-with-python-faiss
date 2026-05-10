@@ -5,13 +5,11 @@ import gzip
 import ijson
 import faiss
 
-faiss.omp_set_num_threads(2)
-
 VECTOR_DIM = 14
 TOP_K = 5
 NLIST = 4096
 NPROBE = 8
-NUM_SHARDS = 2
+NUM_SHARDS = 4
 
 DATA_FILE = "resources/references.json.gz"
 INDEX_DIR = "resources/train"
@@ -123,7 +121,7 @@ def load_saved():
 
     print("[FAISS] loading saved shards...")
 
-    merged = faiss.IndexShards(VECTOR_DIM, True, True)
+    merged = faiss.IndexShards(VECTOR_DIM, False, True)
 
     for i in range(NUM_SHARDS):
         shard_idx = faiss.read_index(SHARD_FILES[i])
