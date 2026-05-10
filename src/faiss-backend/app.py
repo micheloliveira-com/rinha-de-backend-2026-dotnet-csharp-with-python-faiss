@@ -123,7 +123,7 @@ def load_saved():
 
     print("[FAISS] loading saved shards...")
 
-    merged = faiss.IndexShards(VECTOR_DIM, False, True)
+    merged = faiss.IndexShards(VECTOR_DIM, True, True)
 
     for i in range(NUM_SHARDS):
         shard_idx = faiss.read_index(SHARD_FILES[i])
