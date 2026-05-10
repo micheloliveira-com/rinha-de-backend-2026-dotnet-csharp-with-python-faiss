@@ -52,9 +52,9 @@ def load_data(path):
 
 
 # -----------------------------
-# BUILD SINGLE SHARD
+# TRAIN GLOBAL TEMPLATE
 # -----------------------------
-def build_shard(X):
+def train_template(X):
     quantizer = faiss.IndexFlatL2(VECTOR_DIM)
 
     idx = faiss.IndexIVFScalarQuantizer(
@@ -66,6 +66,24 @@ def build_shard(X):
     )
 
     idx.train(X)
+    return idx
+
+
+# -----------------------------
+# BUILD SHARD FROM TEMPLATE
+# -----------------------------
+def build_shard_from_template(template, X):
+    quantizer = faiss.clone_index(template.quantizer)
+
+    idx = faiss.IndexIVFScalarQuantizer(
+        quantizer,
+        VECTOR_DIM,
+        NLIST,
+        faiss.ScalarQuantizer.QT_fp16,
+        faiss.METRIC_L2
+    )
+
+    idx.is_trained = True
     idx.add(X)
     idx.nprobe = NPROBE
 
@@ -81,14 +99,17 @@ def train_and_save():
     print("[FAISS] loading raw data...")
     X, y = load_data(DATA_FILE)
 
-    print(f"[FAISS] building {NUM_SHARDS} shards...")
+    print("[FAISS] training global quantizer on full dataset...")
+    template = train_template(X)
 
+    print(f"[FAISS] building {NUM_SHARDS} shards...")
     parts_X = np.array_split(X, NUM_SHARDS)
+
     shard_indexes = []
 
     for i in range(NUM_SHARDS):
-        print(f"[FAISS] training shard {i}...")
-        shard_idx = build_shard(parts_X[i])
+        print(f"[FAISS] building shard {i}...")
+        shard_idx = build_shard_from_template(template, parts_X[i])
 
         print(f"[FAISS] saving shard {i}...")
         faiss.write_index(shard_idx, SHARD_FILES[i])
@@ -98,7 +119,6 @@ def train_and_save():
     print("[FAISS] saving labels...")
     np.save(LABELS_FILE, y)
 
-    # compose search index with global successive ids
     merged = faiss.IndexShards(VECTOR_DIM, False, True)
 
     for shard_idx in shard_indexes:
@@ -158,7 +178,8 @@ def bootstrap():
 # -----------------------------
 def search(vec):
     _, I = index.search(vec, TOP_K)
-    return int(labels.take(I[0]).sum())
+    valid = I[0][I[0] >= 0]
+    return int(labels.take(valid).sum())
 
 
 # -----------------------------
