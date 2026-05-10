@@ -8,7 +8,7 @@ import faiss
 VECTOR_DIM = 14
 TOP_K = 5
 NLIST = 2048
-NPROBE = 4
+NPROBE = 16
 NUM_SHARDS = 2
 
 DATA_FILE = "resources/references.json.gz"
